@@ -1,0 +1,44 @@
+
+    //android/gradle.properties
+    android.newDsl=false
+
+
+defaultConfig {
+        applicationId = "com.devops.untitled1"
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+
+        val buildId = System.getenv("CM_BUILD_ID")?.toIntOrNull() ?: 1
+        versionCode = buildId
+        versionName = "1.0.$buildId"
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("CM_KEYSTORE_PATH")
+            if (!keystorePath.isNullOrBlank()) {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("CM_KEY_ALIAS")
+                keyPassword = System.getenv("CM_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            val keystorePath = System.getenv("CM_KEYSTORE_PATH")
+            if (!keystorePath.isNullOrBlank()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
+    }
+
+    //Command for creating keystore
+
+    keytool -genkey -v -keystore keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias name
+
+    //Optional convert to base64
+    [Convert]::ToBase64String((Get-Content "keystore.jks" -Encoding Byte)) | Set-Content keystore.base64
